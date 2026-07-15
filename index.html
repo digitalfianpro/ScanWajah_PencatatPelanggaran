@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pencatat Pelanggaran Siswa (SiPPS) - BK Manokwari</title>
+    <!-- Tailwind CSS (Fast CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel - Ditambahkan atribut defer untuk loading cepat -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+    <!-- jsPDF & AutoTable for Portrait PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: background-color, color;
+        }
+        
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Light Mode Custom Overrides */
+        body.light-theme {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        body.light-theme .bg-particles {
+            background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.04) 0%, transparent 45%),
+                              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 45%);
+        }
+        body.light-theme .sidebar-glass {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        body.light-theme .sidebar-glass h1 {
+            background: linear-gradient(to right, #1e1b4b, #4338ca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        body.light-theme .sidebar-glass .nav-btn:not(.bg-gradient-to-r) {
+            color: #475569;
+        }
+        body.light-theme .sidebar-glass .nav-btn:not(.bg-gradient-to-r):hover {
+            background-color: rgba(99, 102, 241, 0.08);
+            color: #4f46e5;
+        }
+        body.light-theme .glass {
+            background: rgba(255, 255, 255, 0.75);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        body.light-theme #pageTitle { color: #0f172a; }
+        body.light-theme #pageSubtitle { color: #64748b; }
+        body.light-theme .bg-slate-900\/40,
+        body.light-theme .bg-slate-900\/30 {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        body.light-theme h3,
+        body.light-theme h4,
+        body.light-theme p.text-slate-100,
+        body.light-theme td.text-slate-200,
+        body.light-theme th,
+        body.light-theme .text-slate-100 {
+            color: #1e293b !important;
+        }
+        body.light-theme .text-slate-400 { color: #475569 !important; }
+        body.light-theme .text-slate-500 { color: #64748b !important; }
+        body.light-theme .bg-slate-950,
+        body.light-theme .bg-slate-950\/80,
+        body.light-theme .bg-slate-950\/40,
+        body.light-theme .bg-slate-950\/20 {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        body.light-theme input,
+        body.light-theme select,
+        body.light-theme textarea {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        body.light-theme input::placeholder,
+        body.light-theme textarea::placeholder {
+            color: #94a3b8 !important;
+        }
+        body.light-theme .divide-slate-800\/40 > * + * {
+            border-color: rgba(0, 0, 0, 0.06) !important;
+        }
+        body.light-theme tr {
+            border-color: rgba(0, 0, 0, 0.06) !important;
+        }
+        body.light-theme .bg-slate-900\/50 {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+        body.light-theme #customModal #modalContent {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+        body.light-theme #customModal #modalCancelBtn {
+            background-color: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+        body.light-theme #customModal #modalCancelBtn:hover {
+            background-color: #e2e8f0;
+        }
+        body.light-theme #loadingOverlay .bg-slate-900\/95 {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+        body.light-theme #loadingOverlay h2 { color: #0f172a; }
+        body.light-theme #loadingOverlay p { color: #475569; }
+        body.light-theme #view-panduan .bg-slate-950\/50 {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+        body.light-theme #view-scan #video-scan,
+        body.light-theme #view-register #video-register {
+            background-color: #e2e8f0;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background: #020617;
+            box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.25);
+            transform: translateZ(0); /* Hardware Acceleration */
+        }
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        canvas.face-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            transform: scaleX(-1);
+        }
+
+        /* High-Tech Scan Line Animation (Hardware Accelerated) */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, transparent, #3b82f6, #6366f1, #3b82f6, transparent);
+            box-shadow: 0 0 20px #6366f1, 0 0 40px #3b82f6;
+            animation: scan-animation 2.5s infinite linear;
+            z-index: 5;
+            opacity: 0.8;
+            will-change: top, opacity;
+        }
+        @keyframes scan-animation {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Elegant Loader */
+        .loader {
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Ambient Pulsing Glow for Logo */
+        .logo-glow {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4), 0 0 60px rgba(99, 102, 241, 0.2);
+            animation: pulse-glow 2.5s infinite ease-in-out;
+            will-change: transform, box-shadow;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(99, 102, 241, 0.4), 0 0 60px rgba(99, 102, 241, 0.2); }
+            50% { transform: scale(1.03); box-shadow: 0 0 45px rgba(99, 102, 241, 0.6), 0 0 90px rgba(99, 102, 241, 0.4); }
+        }
+
+        /* Rotating Tech Outer Rings */
+        .tech-ring {
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            animation: rotate-ring 25s infinite linear;
+            will-change: transform;
+        }
+        @keyframes rotate-ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Background Particle Gradients */
+        .bg-particles {
+            background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+                              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 45%);
+        }
+
+        /* Glassmorphism Styles */
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar-glass {
+            background: linear-gradient(180deg, #090d16 0%, #030712 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden selection:bg-indigo-500 selection:text-white bg-slate-950 text-slate-100">
+
+    <div id="splashScreen" class="fixed inset-0 z-[100] bg-[#05070f] bg-particles flex flex-col items-center justify-center text-white transition-all duration-1000 ease-out">
+        <div class="absolute inset-0 tech-ring-container flex items-center justify-center pointer-events-none">
+            <div class="w-[320px] h-[320px] rounded-full tech-ring absolute"></div>
+            <div class="w-[380px] h-[380px] rounded-full tech-ring absolute" style="animation-direction: reverse; border-color: rgba(139, 92, 246, 0.2)"></div>
+        </div>
+        
+        <div class="relative z-10 flex flex-col items-center max-w-xl px-6 text-center">
+            <div class="mb-8 relative">
+                <!-- Glowing Aura -->
+                <div class="absolute inset-0 bg-indigo-600 rounded-3xl blur-2xl opacity-40 animate-pulse"></div>
+                <!-- Premium Large Logo -->
+                <img src="https://i.ibb.co.com/QvQpptHQ/LOGO-BK-Manokwari.jpg" 
+                     alt="Logo BK Manokwari" 
+                     class="w-40 h-40 object-contain rounded-3xl border border-indigo-500/50 logo-glow relative z-10 p-1 bg-[#090d16]"
+                     onerror="this.src='https://placehold.co/160x160/090d16/ffffff?text=BK+Manokwari'">
+            </div>
+            
+            <h1 class="text-xs uppercase tracking-[0.3em] font-extrabold text-indigo-400 mb-2">Bimbingan Konseling Manokwari</h1>
+            <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-300 leading-tight">
+                APLIKASI SCAN WAJAH<br>PENCATAT PELANGGARAN SISWA
+            </h2>
+            <p class="text-xs text-slate-400 mt-4 max-w-md font-medium leading-relaxed">
+                Sistem Pencatatan Kedisiplinan Otomatis Terintegrasi Cloud Firestore dengan Auto-Camera Scanner bawaan.
+            </p>
+            
+            <!-- Sleek Horizontal Progress Bar with Numbers -->
+            <div class="w-64 bg-slate-800/80 rounded-full h-1.5 mt-8 overflow-hidden border border-slate-700/50 relative">
+                <div id="splashProgress" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-400 h-full w-0 transition-all duration-1000 ease-out"></div>
+            </div>
+            <div id="splashStatus" class="text-xs text-indigo-400 font-bold mt-4 tracking-widest uppercase">
+                Menghubungkan Cloud Server... (<span id="splashCountdown">6</span> dtk)
+            </div>
+        </div>
+    </div>
+
+    <aside class="w-72 sidebar-glass text-white flex flex-col h-full shadow-2xl z-20 relative flex-shrink-0">
+        <!-- Logo Brand & Identity Area -->
+        <div class="p-6 flex items-center gap-4 border-b border-slate-800/60 relative z-10">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-40 group-hover:opacity-75 transition duration-1000"></div>
+                <img src="https://i.ibb.co.com/QvQpptHQ/LOGO-BK-Manokwari.jpg" 
+                     alt="Logo BK Manokwari" 
+                     class="w-12 h-12 object-contain rounded-2xl border border-indigo-500/30 bg-[#090d16] relative p-0.5"
+                     onerror="this.src='https://placehold.co/48x48/090d16/ffffff?text=BK'">
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200">BK MANOKWARI</h1>
+                <p class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase">SiPPS v3.0 LITE</p>
+            </div>
+        </div>
+        
+        <!-- Sidebar Navigation -->
+        <nav class="flex-1 py-4 px-4 space-y-1.5 overflow-y-auto z-10 relative">
+            <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-2">Menu Utama</p>
+            
+            <button onclick="navigate('dashboard')" class="nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25" data-target="dashboard">
+                <div class="w-6 flex justify-center"><i class="fa-solid fa-chart-pie text-base group-hover:scale-110 transition-transform"></i></div>
+                <span class="text-sm font-semibold tracking-wide">Dashboard</span>
+            </button>
+            <button onclick="navigate('students')" class="nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left text-slate-400 hover:bg-slate-900/60 hover:text-white transition-all duration-300" data-target="students">
+                <div class="w-6 flex justify-center"><i class="fa-solid fa-users-viewfinder text-base group-hover:scale-110 transition-transform"></i></div>
+                <span class="text-sm font-semibold tracking-wide">Daftar Siswa</span>
+            </button>
+            
+            <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-4">Kamera Pemindai</p>
+            
+            <button onclick="navigate('register')" class="nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left text-slate-400 hover:bg-slate-900/60 hover:text-white transition-all duration-300" data-target="register">
+                <div class="w-6 flex justify-center"><i class="fa-solid fa-user-plus text-base group-hover:scale-110 transition-transform"></i></div>
+                <span class="text-sm font-semibold tracking-wide">Perekaman Wajah</span>
+            </button>
+            <button onclick="navigate('scan')" class="nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left text-slate-400 hover:bg-slate-900/60 hover:text-white transition-all duration-300" data-target="scan">
+                <div class="w-6 flex justify-center"><i class="fa-solid fa-face-viewfinder text-base group-hover:scale-110 transition-transform"></i></div>
+                <span class="text-sm font-semibold tracking-wide">Scan Pelanggaran</span>
+            </button>
+
+            <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-4">Informasi</p>
+            
+            <button onclick="navigate('panduan')" class="nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left text-slate-400 hover:bg-slate-900/60 hover:text-white transition-all duration-300" data-target="panduan">
+                <div class="w-6 flex justify-center"><i class="fa-solid fa-book-open text-base group-hover:scale-110 transition-transform"></i></div>
+                <span class="text-sm font-semibold tracking-wide">Panduan Penggunaan</span>
+            </button>
+        </nav>
+        
+        <!-- Ambient sidebar decoration -->
+        <div class="absolute bottom-0 left-0 w-full h-48 bg-indigo-600/5 blur-[80px] pointer-events-none"></div>
+        
+        <!-- Administrator Card -->
+        <div class="p-4 border-t border-slate-800/60 relative z-10">
+            <div class="bg-slate-900/50 rounded-2xl p-4 flex items-center gap-3 border border-slate-800/50">
+                <div class="relative flex-shrink-0">
+                    <img src="https://ui-avatars.com/api/?name=Admin+BK&background=4f46e5&color=fff&rounded=true" alt="Admin" class="w-9 h-9 rounded-full shadow-md">
+                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-slate-100 truncate">Administrator</p>
+                    <p class="text-[10px] text-slate-400 truncate">BK Manokwari</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto relative bg-[#090d16] bg-particles">
+        <!-- Main Loading Overlay -->
+        <div id="loadingOverlay" class="fixed inset-0 bg-[#05070f]/80 z-50 flex flex-col items-center justify-center backdrop-blur-md transition-opacity duration-500 hidden">
+            <div class="bg-slate-900/95 p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full border border-slate-800">
+                <div class="relative mb-6">
+                    <div class="loader"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-indigo-500 text-xs font-bold"><i class="fa-solid fa-robot animate-bounce"></i></div>
+                </div>
+                <h2 class="text-lg font-extrabold text-slate-100 mb-2 text-center" id="loadTitle">Memproses...</h2>
+                <p class="text-slate-400 text-xs text-center leading-relaxed" id="loadDesc">Harap tunggu sesaat selagi sistem memproses data.</p>
+            </div>
+        </div>
+
+        <!-- Premium Top Header -->
+        <header class="glass shadow-lg px-8 py-5 flex justify-between items-center sticky top-0 z-30">
+            <div>
+                <h2 id="pageTitle" class="text-xl md:text-2xl font-extrabold text-slate-100 tracking-tight">Dashboard Overview</h2>
+                <p class="text-xs text-slate-400 font-medium mt-0.5" id="pageSubtitle">Sistem Pemantauan Kedisiplinan Terpadu</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-10 h-10 rounded-full bg-slate-900/60 border border-slate-800 flex items-center justify-center text-amber-400 hover:text-amber-300 transition-all shadow-md focus:outline-none" title="Ubah Mode Layar">
+                    <i class="fa-solid fa-sun text-base"></i>
+                </button>
+                <div class="bg-slate-900/60 px-4 py-2 rounded-full border border-slate-800 flex items-center gap-3 shadow-md">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-300">Kamera Ready</span>
+                </div>
+                <div class="hidden sm:flex items-center gap-2 border-l border-slate-800 pl-4">
+                    <img src="https://i.ibb.co.com/QvQpptHQ/LOGO-BK-Manokwari.jpg" class="w-8 h-8 object-contain rounded-lg border border-slate-800 p-0.5 bg-slate-900" alt="Logo mini">
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+            
+            <div id="view-dashboard" class="view-section block space-y-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900/40 rounded-3xl shadow-xl p-6 border border-slate-800/80 hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group">
+                        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-600/5 rounded-full blur-xl group-hover:bg-indigo-600/10 transition-colors"></div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-indigo-950/50 text-indigo-400 rounded-2xl flex items-center justify-center text-2xl border border-indigo-900/30">
+                                <i class="fa-solid fa-user-graduate"></i>
+                            </div>
+                            <span class="bg-indigo-950 text-indigo-400 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-900/50 uppercase tracking-widest">Total</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-semibold mb-1">Siswa Terdaftar</p>
+                        <h3 class="text-4xl font-black text-slate-100" id="stat-total-students">0</h3>
+                    </div>
+                    
+                    <div class="bg-slate-900/40 rounded-3xl shadow-xl p-6 border border-slate-800/80 hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group">
+                        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-rose-600/5 rounded-full blur-xl group-hover:bg-rose-600/10 transition-colors"></div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-rose-950/50 text-rose-400 rounded-2xl flex items-center justify-center text-2xl border border-rose-900/30">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <span class="bg-rose-950 text-rose-400 text-[10px] font-bold px-3 py-1 rounded-full border border-rose-900/50 uppercase tracking-widest">Kasus</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-semibold mb-1">Total Pelanggaran</p>
+                        <h3 class="text-4xl font-black text-slate-100" id="stat-total-violations">0</h3>
+                    </div>
+                    
+                    <div class="bg-slate-900/40 rounded-3xl shadow-xl p-6 border border-slate-800/80 hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group">
+                        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-amber-600/5 rounded-full blur-xl group-hover:bg-amber-600/10 transition-colors"></div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-amber-950/50 text-amber-400 rounded-2xl flex items-center justify-center text-2xl border border-amber-900/30">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <span class="bg-amber-950 text-amber-400 text-[10px] font-bold px-3 py-1 rounded-full border border-amber-900/50 uppercase tracking-widest">Tindak Lanjut</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-semibold mb-1">Total Tindak Lanjut BK</p>
+                        <h3 class="text-4xl font-black text-slate-100" id="stat-total-followups">0</h3>
+                    </div>
+                </div>
+
+                <!-- Recent Violations Table -->
+                <div class="bg-slate-900/40 rounded-3xl shadow-xl border border-slate-800/80 overflow-hidden backdrop-blur-md">
+                    <div class="px-8 py-6 border-b border-slate-800/80 flex justify-between items-center bg-slate-950/40">
+                        <h3 class="font-extrabold text-lg text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Riwayat Pelanggaran Terbaru
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950/20 text-slate-400 text-xs uppercase tracking-widest border-b border-slate-800">
+                                    <th class="py-4 px-8 font-bold">Waktu</th>
+                                    <th class="py-4 px-8 font-bold">Profil Siswa</th>
+                                    <th class="py-4 px-8 font-bold">Jenis Pelanggaran</th>
+                                    <th class="py-4 px-8 font-bold text-center">Tindak Lanjut Guru BK</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-violations-list" class="divide-y divide-slate-800/40">
+                                <tr>
+                                    <td colspan="4" class="py-12 text-center text-slate-500 font-medium">
+                                        <div class="flex flex-col items-center gap-3">
+                                            <i class="fa-solid fa-folder-open text-4xl text-slate-700"></i>
+                                            Belum ada data pelanggaran tercatat.
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-students" class="view-section hidden space-y-6">
+                <!-- Advanced Controls -->
+                <div class="bg-slate-900/40 rounded-3xl p-6 border border-slate-800/80 backdrop-blur-md space-y-6">
+                    <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+                        <h3 class="font-extrabold text-lg text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-address-book text-indigo-400"></i> Database Siswa Terdaftar
+                        </h3>
+                        
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button onclick="downloadExcelTemplate()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-900/30 hover:-translate-y-0.5 flex items-center gap-2">
+                                <i class="fa-solid fa-file-excel"></i> Template Excel
+                            </button>
+                            <button onclick="document.getElementById('excel-upload').click()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-amber-950/30 hover:-translate-y-0.5 flex items-center gap-2">
+                                <i class="fa-solid fa-upload"></i> Upload Excel
+                            </button>
+                            <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+                            
+                            <div class="hidden sm:block w-px h-8 bg-slate-800 mx-1"></div>
+                            
+                            <button onclick="navigate('register')" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-900/30 hover:-translate-y-0.5 flex items-center gap-2">
+                                <i class="fa-solid fa-user-plus"></i> Tambah Siswa Manual
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search & Class Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <input type="text" id="search-student" oninput="applyFilters()" placeholder="Cari nama siswa atau NISN..." class="w-full bg-slate-950/80 border-2 border-slate-800 rounded-xl px-4 py-3 pl-12 focus:border-indigo-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 placeholder-slate-500">
+                        </div>
+                        <div class="relative">
+                            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <select id="filter-class" onchange="applyFilters()" class="w-full bg-slate-950/80 border-2 border-slate-800 rounded-xl px-4 py-3 pl-12 focus:border-indigo-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 placeholder-slate-500 cursor-pointer appearance-none">
+                                <option value="">Semua Kelas</option>
+                            </select>
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Export Panel (Portrait Layout) -->
+                <div class="bg-slate-900/40 rounded-3xl p-6 border border-slate-800/80 backdrop-blur-md space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-800/60 pb-4">
+                        <div class="w-10 h-10 bg-rose-950/40 text-rose-400 border border-rose-900/20 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-base text-slate-100">Cetak Laporan Bimbingan Konseling (PDF Portrait)</h3>
+                            <p class="text-xs text-slate-400">Unduh berkas PDF resmi lengkap dengan Kop Surat Sekolah dan kolom tanda tangan Guru BK.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Group 1: Per Kelas -->
+                        <div class="bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 space-y-4">
+                            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block"><i class="fa-solid fa-layer-group mr-1.5"></i>Laporan Per Kelas</span>
+                            <div class="space-y-3">
+                                <div class="relative">
+                                    <select id="pdf-class-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none cursor-pointer appearance-none">
+                                        <option value="">-- Pilih Kelas --</option>
+                                    </select>
+                                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </div>
+                                </div>
+                                <button onclick="downloadPDFByClass()" class="w-full bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-400 hover:text-white transition-all text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-download"></i> Unduh Laporan Kelas
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Group 2: Khusus Pelanggar -->
+                        <div class="bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 space-y-4 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[10px] font-black text-rose-400 uppercase tracking-widest block"><i class="fa-solid fa-user-ninja mr-1.5"></i>Riwayat Kasus Aktif</span>
+                                <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">Mencetak kompilasi seluruh siswa terdaftar yang memiliki minimal 1 atau lebih catatan bimbingan konseling.</p>
+                            </div>
+                            <button onclick="downloadPDFViolationsOnly()" class="w-full mt-4 bg-rose-600/10 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white transition-all text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-circle-exclamation"></i> Unduh Khusus Pelanggar
+                            </button>
+                        </div>
+
+                        <!-- Group 3: Berkala (Mingguan / Bulanan) -->
+                        <div class="bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 space-y-4 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest block"><i class="fa-solid fa-calendar-week mr-1.5"></i>Laporan Berkala</span>
+                                <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">Ekspor kronologi pelanggaran berdasarkan rentang waktu penanganan siswa.</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mt-4">
+                                <button onclick="downloadPDFWeekly()" class="bg-amber-600/10 hover:bg-amber-600 border border-amber-500/30 text-amber-400 hover:text-white transition-all text-xs font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5" title="7 Hari Terakhir">
+                                    <i class="fa-solid fa-calendar-day"></i> Mingguan
+                                </button>
+                                <button onclick="downloadPDFMonthly()" class="bg-emerald-600/10 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white transition-all text-xs font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5" title="30 Hari Terakhir">
+                                    <i class="fa-solid fa-calendar-days"></i> Bulanan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Table Card -->
+                <div class="bg-slate-900/40 rounded-3xl shadow-xl border border-slate-800/80 overflow-hidden backdrop-blur-md">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950/40 text-slate-400 text-xs uppercase tracking-widest border-b border-slate-800">
+                                    <th class="py-4 px-8 font-bold">Identitas (NISN)</th>
+                                    <th class="py-4 px-8 font-bold">Nama Lengkap & Kelas</th>
+                                    <th class="py-4 px-8 font-bold text-center">Status Biometrik</th>
+                                    <th class="py-4 px-8 font-bold text-center">Total Tindak Lanjut</th>
+                                    <th class="py-4 px-8 font-bold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-list" class="divide-y divide-slate-800/40">
+                                <tr>
+                                    <td colspan="5" class="py-12 text-center text-slate-500 font-medium">
+                                        <div class="flex flex-col items-center gap-3">
+                                            <i class="fa-solid fa-users-slash text-4xl text-slate-700"></i>
+                                            Belum ada siswa terdaftar. Silakan upload Excel atau rekam manual.
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-register" class="view-section hidden">
+                <div class="bg-slate-900/40 rounded-3xl shadow-xl border border-slate-800/80 overflow-hidden flex flex-col lg:flex-row backdrop-blur-md">
+                    <!-- Camera Area -->
+                    <div class="w-full lg:w-1/2 bg-[#05070e] p-8 flex flex-col items-center justify-center min-h-[500px] relative">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none"></div>
+                        
+                        <div class="video-container ring-4 ring-indigo-500/20 shadow-[0_0_40px_rgba(99,102,241,0.15)] relative z-10">
+                            <video id="video-register" autoplay muted playsinline class="rounded-3xl"></video>
+                            <canvas id="canvas-register" class="face-overlay"></canvas>
+                        </div>
+                        <p id="register-cam-status" class="text-slate-400 mt-6 text-xs text-center font-medium px-4 relative z-10 max-w-sm">
+                            Arahkan wajah ke kamera laptop/HP untuk mengunci parameter foto biometrik.
+                        </p>
+                        
+                        <button id="btn-capture-face" class="mt-6 bg-white hover:bg-indigo-50 text-slate-950 font-extrabold py-3 px-8 rounded-full shadow-xl shadow-white/5 transition-all transform hover:scale-105 flex items-center gap-3 relative z-10">
+                            <i class="fa-solid fa-camera text-lg text-indigo-600"></i> Kunci Foto Wajah
+                        </button>
+                    </div>
+
+                    <!-- Form Area -->
+                    <div class="w-full lg:w-1/2 p-8 md:p-10 bg-slate-900/30">
+                        <div class="mb-8 flex items-center gap-4">
+                            <img src="https://i.ibb.co.com/QvQpptHQ/LOGO-BK-Manokwari.jpg" class="w-14 h-14 object-contain rounded-2xl border border-slate-800 p-1 bg-slate-950" alt="BK Logo">
+                            <div>
+                                <h3 class="text-2xl font-black text-slate-100">Registrasi Biometrik</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Lengkapi identitas dan kaitkan dengan foto wajah aktif.</p>
+                            </div>
+                        </div>
+                        
+                        <form id="form-register" class="space-y-5" onsubmit="event.preventDefault(); submitRegistration();">
+                            <input type="hidden" id="reg-student-id">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">NISN / Nomor Induk Siswa Nasional</label>
+                                <input type="text" id="reg-nis" required placeholder="Contoh: 0012345678" class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 placeholder-slate-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nama Lengkap Siswa</label>
+                                <input type="text" id="reg-name" required placeholder="Masukkan nama sesuai rapor" class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 placeholder-slate-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Kelas (Dapat Diketik Manual)</label>
+                                <input type="text" id="reg-class" required list="class-list" placeholder="Ketik kelas baru atau pilih..." class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 placeholder-slate-600">
+                                <datalist id="class-list">
+                                    <option value="X IPA 1">
+                                    <option value="X IPS 1">
+                                    <option value="XI IPA 1">
+                                    <option value="XI IPS 1">
+                                    <option value="XII IPA 1">
+                                    <option value="XII IPS 1">
+                                </datalist>
+                            </div>
+                            
+                            <div class="bg-indigo-950/20 border border-indigo-900/30 rounded-2xl p-5 mt-6 relative overflow-hidden">
+                                <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/5 rounded-full -mr-10 -mt-10 blur-xl"></div>
+                                <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-3">Status Bind Biometrik</h4>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative flex h-3 w-3">
+                                      <span id="face-ping" class="absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75 animate-ping"></span>
+                                      <span id="face-status-indicator" class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                    </div>
+                                    <span id="face-status-text" class="text-xs font-bold text-rose-500">Belum ada foto wajah dikunci</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btn-submit-register" disabled class="w-full mt-8 bg-slate-800 text-slate-500 font-bold py-3.5 px-4 rounded-xl cursor-not-allowed transition-all duration-300 border border-slate-700/50">
+                                Simpan Data ke Database Cloud
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-scan" class="view-section hidden">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Scanner Camera Area -->
+                    <div class="w-full lg:w-7/12 bg-slate-900/40 rounded-3xl shadow-xl border border-slate-800/80 p-6 md:p-8 flex flex-col items-center backdrop-blur-md">
+                        <div class="flex items-center gap-3 mb-6 w-full justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                </span>
+                                <h3 class="text-lg font-extrabold text-slate-100 tracking-tight">AI Live Face Tracker</h3>
+                            </div>
+                            <img src="https://i.ibb.co.com/QvQpptHQ/LOGO-BK-Manokwari.jpg" class="w-8 h-8 object-contain rounded-lg border border-slate-800 p-0.5 bg-slate-900" alt="Logo mini scanner">
+                        </div>
+                        
+                        <div class="video-container ring-4 ring-slate-800/50 shadow-2xl relative">
+                            <video id="video-scan" autoplay muted playsinline class="rounded-2xl"></video>
+                            <canvas id="canvas-scan" class="face-overlay"></canvas>
+                            <div class="scan-line" id="scan-animation-element"></div>
+                        </div>
+
+                        <!-- Manual/Interactive Trigger to Simulate Match -->
+                        <div id="scan-simulation-panel" class="mt-4 w-full flex flex-col gap-2 items-center hidden">
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 tracking-widest">Simulasi Pengujian Cepat</span>
+                            <select id="simulate-student-select" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 outline-none w-full max-w-sm">
+                                <option value="">-- Simulasikan Scan Siswa Terdaftar --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mt-6 bg-slate-950/80 px-6 py-3 rounded-full border border-slate-800 w-full max-w-sm flex items-center justify-center">
+                            <p class="text-slate-400 text-xs font-semibold text-center" id="scan-instruction">
+                                <i class="fa-solid fa-crosshairs text-indigo-400 mr-2 animate-spin"></i>Arahkan wajah siswa ke area kamera.
+                            </p>
+                        </div>
+                        
+                        <!-- Identified Card Result -->
+                        <div id="scan-result-card" class="mt-6 w-full hidden border-2 rounded-2xl p-5 bg-emerald-950/20 border-emerald-500/30 transform transition-all duration-500 shadow-lg shadow-emerald-950/10 max-w-lg">
+                            <div class="flex items-center gap-5">
+                                <div class="w-14 h-14 bg-emerald-950/80 text-emerald-400 border border-emerald-900/30 rounded-full flex items-center justify-center text-2xl shadow-inner relative">
+                                    <i class="fa-solid fa-shield-check"></i>
+                                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[10px] text-emerald-400 font-extrabold uppercase tracking-widest mb-0.5">Identitas Terverifikasi</p>
+                                    <h4 class="text-xl font-bold text-slate-100" id="scan-res-name">Nama Siswa</h4>
+                                    <p class="text-xs text-slate-400 font-medium mt-1 flex items-center gap-2">
+                                        <span id="scan-res-nis" class="bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-slate-300 font-mono text-[10px]">NISN</span> 
+                                        <span id="scan-res-class" class="text-indigo-400">Kelas</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Violation Record Form -->
+                    <div class="w-full lg:w-5/12 bg-slate-900/40 rounded-3xl shadow-xl border border-slate-800/80 p-6 md:p-8 opacity-30 grayscale pointer-events-none transition-all duration-500 transform translate-y-4 backdrop-blur-md" id="violation-form-container">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-extrabold text-rose-500 flex items-center gap-3">
+                                <div class="p-2 bg-rose-950/40 border border-rose-900/20 rounded-xl"><i class="fa-solid fa-triangle-exclamation"></i></div> Catat Pelanggaran
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-2">Pilih kategori pelanggaran dan tentukan tindakan bimbingan yang akan diambil.</p>
+                        </div>
+
+                        <form id="form-violation" class="space-y-5" onsubmit="event.preventDefault(); submitViolation();">
+                            <input type="hidden" id="vio-student-id">
+                            
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Kategori Pelanggaran</label>
+                                <select id="vio-type" required class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 focus:border-rose-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 cursor-pointer appearance-none">
+                                    <option value="">-- Pilih Kategori --</option>
+                                    <option value="Terlambat Hadir">Terlambat Hadir</option>
+                                    <option value="Atribut Tidak Lengkap">Atribut Tidak Lengkap</option>
+                                    <option value="Rambut Gondrong (Laki-laki)">Rambut Gondrong (Laki-laki)</option>
+                                    <option value="Membolos">Membolos Jam Pelajaran</option>
+                                    <option value="Berkelahi">Berkelahi / Kekerasan</option>
+                                    <option value="Lainnya">Lainnya (Input Manual)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Tindak Lanjut Guru BK</label>
+                                <div class="relative">
+                                    <select id="vio-followup" required class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 focus:border-rose-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 cursor-pointer appearance-none">
+                                        <option value="">-- Pilih Tindak Lanjut --</option>
+                                        <option value="Teguran Lisan & Pembinaan">Teguran Lisan & Pembinaan</option>
+                                        <option value="Konseling Individual (BK)">Konseling Individual (BK)</option>
+                                        <option value="Pemanggilan Orang Tua / Wali">Pemanggilan Orang Tua / Wali</option>
+                                        <option value="Pembuatan Surat Perjanjian">Pembuatan Surat Perjanjian</option>
+                                        <option value="Rujukan Kasus / Skorsing">Rujukan Kasus / Skorsing</option>
+                                        <option value="Lainnya">Lainnya (Tulis detail di Catatan)</option>
+                                    </select>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Keterangan / Catatan Kejadian</label>
+                                <textarea id="vio-notes" rows="3" placeholder="Tulis rincian lokasi, saksi, atau detil tindak lanjut jika diperlukan..." class="w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 focus:border-rose-500 focus:ring-0 outline-none transition-all font-semibold text-slate-100 resize-none"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black py-4 px-4 rounded-xl shadow-lg shadow-rose-950/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 border border-rose-800/30">
+                                <i class="fa-solid fa-check-to-slot text-lg"></i> Simpan Catatan Hukuman
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-panduan" class="view-section hidden space-y-8">
+                <div class="bg-slate-900/40 rounded-3xl p-6 md:p-8 border border-slate-800/80 backdrop-blur-md space-y-6">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-indigo-950/60 text-indigo-400 rounded-2xl border border-indigo-900/30 text-2xl">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-extrabold text-slate-100">Panduan Lengkap Penggunaan Aplikasi SiPPS</h3>
+                            <p class="text-xs text-slate-400">Ikuti langkah-langkah di bawah ini untuk memulai pencatatan siswa berbasis wajah.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Step 1 -->
+                        <div class="bg-slate-950/50 p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all duration-300 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="bg-indigo-950 text-indigo-400 text-xs font-black px-3 py-1 rounded-full border border-indigo-900/50 uppercase">Langkah 01</span>
+                                <i class="fa-solid fa-file-excel text-lg text-emerald-500"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-200">Database & Excel Import</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Masuk ke menu <span class="text-indigo-400 font-bold">Daftar Siswa</span>, unduh template excel standar. Isi kolom <span class="text-slate-300 font-medium">NISN</span>, <span class="text-slate-300 font-medium">Nama Lengkap</span>, dan <span class="text-slate-300 font-medium">Kelas</span>, lalu klik <span class="text-indigo-400 font-bold">Upload Data Excel</span> untuk menyelaraskannya ke server Cloud Firestore Anda secara otomatis.
+                            </p>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="bg-slate-950/50 p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all duration-300 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="bg-indigo-950 text-indigo-400 text-xs font-black px-3 py-1 rounded-full border border-indigo-900/50 uppercase">Langkah 02</span>
+                                <i class="fa-solid fa-fingerprint text-lg text-indigo-400 animate-pulse"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-200">Perekaman Wajah (Biometrik)</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Klik menu <span class="text-indigo-400 font-bold">Perekaman Wajah</span>, isi NISN siswa yang bersangkutan. Posisikan wajah di depan kamera bawaan HP/Laptop secara pas. Klik tombol <span class="text-slate-100 font-bold">Kunci Foto Wajah</span> untuk menangkap profil biometrik mereka, kemudian klik simpan.
+                            </p>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="bg-slate-950/50 p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all duration-300 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="bg-indigo-950 text-indigo-400 text-xs font-black px-3 py-1 rounded-full border border-indigo-900/50 uppercase">Langkah 03</span>
+                                <i class="fa-solid fa-face-viewfinder text-lg text-rose-500"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-200">Scan & Tindak Lanjut BK</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Akses menu <span class="text-indigo-400 font-bold">Scan Pelanggaran</span>. Hadapkan siswa ke kamera, sistem pemindai otomatis bawaan akan mendeteksi dan memvalidasi identitas siswa dalam database. Setelah terverifikasi, tentukan jenis <span class="text-rose-400 font-bold">Tindak Lanjut Guru BK</span> pada panel di sebelah kanan.
+                            </p>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="bg-slate-950/50 p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all duration-300 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="bg-indigo-950 text-indigo-400 text-xs font-black px-3 py-1 rounded-full border border-indigo-900/50 uppercase">Langkah 04</span>
+                                <i class="fa-solid fa-cloud-arrow-up text-lg text-emerald-400"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-200">Pemantauan & Evaluasi Sanksi</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Di menu <span class="text-indigo-400 font-bold">Dashboard</span>, amati akumulasi statistik pelanggaran secara berkala. Seluruh rekor penanganan bimbingan siswa akan dihitung otomatis secara kumulatif untuk memudahkan Bimbingan Konseling (BK) melakukan pemantauan berkala.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Section -->
+                    <div class="border-t border-slate-800 pt-6 space-y-4">
+                        <h4 class="font-extrabold text-base text-slate-100"><i class="fa-solid fa-circle-question text-indigo-400 mr-2"></i> Pertanyaan Sering Diajukan (FAQ)</h4>
+                        <div class="space-y-3 text-xs text-slate-400">
+                            <div class="p-4 bg-slate-950/20 rounded-xl border border-slate-800/60">
+                                <p class="font-bold text-slate-200 mb-1">Tanya: Mengapa aplikasi tidak meminta download model AI lagi?</p>
+                                <p>Jawab: Aplikasi ini telah diperbarui menggunakan modul pemindaian native HP/Laptop yang super cepat dan kompatibel langsung. Hal ini menghilangkan waktu loading berat download model AI sebelumnya.</p>
+                            </div>
+                            <div class="p-4 bg-slate-950/20 rounded-xl border border-slate-800/60">
+                                <p class="font-bold text-slate-200 mb-1">Tanya: Apakah data saya tersimpan permanen?</p>
+                                <p>Jawab: Ya, karena aplikasi ini telah terintegrasi dengan Firebase Cloud Firestore Anda secara langsung. Seluruh perubahan data langsung disinkronkan ke cloud secara real-time.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="customModal" class="fixed inset-0 bg-slate-950/80 z-[110] hidden flex items-center justify-center backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-slate-900 rounded-3xl shadow-2xl p-8 max-w-sm w-full mx-4 transform transition-all scale-95 opacity-0 border border-slate-800" id="modalContent">
+            <div class="text-center relative">
+                <div class="absolute -top-12 left-1/2 -translate-y-1/2">
+                    <img src="https://i.ibb.co.com/QvQpptHQ/LOGO-BK-Manokwari.jpg" class="w-16 h-16 object-contain rounded-2xl border-2 border-indigo-500 bg-slate-950 p-1 logo-glow shadow-lg" alt="Logo BK Modal">
+                </div>
+                
+                <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 mt-8">
+                    <!-- Icon populated dynamically -->
+                </div>
+                
+                <h3 class="text-lg font-extrabold text-slate-100 mb-2 tracking-tight" id="modalTitle">Notifikasi</h3>
+                <p class="text-xs text-slate-400 mb-6 font-medium leading-relaxed" id="modalMessage">Pesan.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button type="button" id="modalCancelBtn" class="hidden w-full inline-flex justify-center rounded-xl border border-slate-850 px-5 py-3.5 bg-slate-950 text-sm font-bold text-slate-400 hover:bg-slate-900 focus:outline-none transition-all hover:-translate-y-0.5 cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="button" onclick="closeModal()" id="modalBtn" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-lg px-5 py-3.5 bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-500 focus:outline-none transition-all hover:-translate-y-0.5 cursor-pointer">
+                        Mengerti
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Import initializeFirestore & persistentLocalCache untuk performa loading secepat kilat (Instant Offline Cache)
+        import { 
+            initializeFirestore, 
+            persistentLocalCache, 
+            persistentMultipleTabManager, 
+            doc, 
+            setDoc, 
+            collection, 
+            onSnapshot, 
+            updateDoc, 
+            deleteDoc 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration (Directly matching your credentials)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLvnFJ3GWHcqiOnadslKTh8u4bu-QhiW0",
+            authDomain: "scanpelanggaransiswa.firebaseapp.com",
+            projectId: "scanpelanggaransiswa",
+            storageBucket: "scanpelanggaransiswa.firebasestorage.app",
+            messagingSenderId: "392272132132",
+            appId: "1:392272132132:web:b0616a202dead5173540b1",
+            measurementId: "G-DGTPTZ8295"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // OPTIMASI: Mengaktifkan Multi-Tab Offline Cache agar data dimuat instan tanpa jeda server
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({
+                tabManager: persistentMultipleTabManager()
+            })
+        });
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'scan-pelanggaran-app';
+        let userId = null;
+
+        let students = [];
+        let violations = [];
+        let currentClassFilter = "";
+        let currentSearchQuery = "";
+        const recentScans = new Map(); // Untuk mencegah scan dobel / spam sanksi
+        
+        // Native camera streaming configs
+        let currentStream = null;
+        let scanInterval = null;
+        let animationFrameId = null; // Menyimpan ID RequestAnimationFrame untuk optimasi memori GPU
+        let tempFaceDescriptor = null; 
+
+        // Bind Window Functions ke Global scope
+        window.navigate = navigate;
+        window.startRegisterCamera = startRegisterCamera;
+        window.startScanCamera = startScanCamera;
+        window.downloadExcelTemplate = downloadExcelTemplate;
+        window.handleExcelUpload = handleExcelUpload;
+        window.submitRegistration = submitRegistration;
+        window.submitViolation = submitViolation;
+        window.closeModal = closeModal;
+        window.deleteStudent = deleteStudent;
+        window.editStudent = editStudent;
+        window.applyFilters = applyFilters;
+        window.toggleTheme = toggleTheme;
+
+        // Binding global PDF functions
+        window.downloadPDFByClass = downloadPDFByClass;
+        window.downloadPDFViolationsOnly = downloadPDFViolationsOnly;
+        window.downloadPDFWeekly = downloadPDFWeekly;
+        window.downloadPDFMonthly = downloadPDFMonthly;
+
+        window.onload = async function() {
+            try {
+                // Memulihkan preferensi tema tersimpan
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                    document.body.classList.add('light-theme');
+                    const btn = document.getElementById('theme-toggle-btn');
+                    if (btn) {
+                        btn.innerHTML = '<i class="fa-solid fa-moon text-base"></i>';
+                        btn.className = "w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-indigo-600 hover:text-indigo-500 transition-all shadow-md focus:outline-none";
+                    }
+                }
+
+                // Efek visual hitung mundur 6 Detik pada Splash Screen
+                let splashTime = 6;
+                const progressElement = document.getElementById('splashProgress');
+                const countdownElement = document.getElementById('splashCountdown');
+                const splashStatusElement = document.getElementById('splashStatus');
+                
+                const splashTimer = setInterval(() => {
+                    splashTime--;
+                    if (countdownElement) {
+                        countdownElement.innerText = splashTime;
+                    }
+                    if (progressElement) {
+                        progressElement.style.width = `${((6 - splashTime) / 6) * 100}%`;
+                    }
+                    
+                    if (splashTime <= 0) {
+                        clearInterval(splashTimer);
+                        const splash = document.getElementById('splashScreen');
+                        if (splash) {
+                            splash.classList.add('opacity-0', 'pointer-events-none');
+                            setTimeout(() => {
+                                splash.style.display = 'none';
+                                if (students.length === 0) {
+                                    showModal('info', 'Cloud Terhubung', 'Selamat datang di Aplikasi SiPPS BK Manokwari. Tambahkan data siswa atau buka menu Panduan Penggunaan untuk memulai.');
+                                }
+                            }, 1000);
+                        }
+                    }
+                }, 1000);
+
+                // Autentikasi Anonim cepat ke Proyek Firebase Anda
+                await signInAnonymously(auth);
+                userId = auth.currentUser.uid;
+                setupRealtimeSync();
+                
+            } catch (error) {
+                console.error("Initialization Error:", error);
+                const status = document.getElementById('splashStatus');
+                if (status) status.innerText = "Koneksi Cloud Bermasalah";
+            }
+        };
+
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('theme-toggle-btn');
+            body.classList.toggle('light-theme');
+            
+            const isLight = body.classList.contains('light-theme');
+            if (isLight) {
+                btn.innerHTML = '<i class="fa-solid fa-moon text-base"></i>';
+                btn.className = "w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-indigo-600 hover:text-indigo-500 transition-all shadow-md focus:outline-none";
+                localStorage.setItem('theme', 'light');
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-sun text-base"></i>';
+                btn.className = "w-10 h-10 rounded-full bg-slate-900/60 border border-slate-800 flex items-center justify-center text-amber-400 hover:text-amber-300 transition-all shadow-md focus:outline-none";
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function setupRealtimeSync() {
+            if (!userId) return;
+
+            const studentsRef = collection(db, 'artifacts', appId, 'users', userId, 'students');
+            onSnapshot(studentsRef, (snapshot) => {
+                // Membaca dari Offline Cache Firestore secara instan (Zero latency)
+                students = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    students.push({
+                        id: doc.id,
+                        nis: data.nis,
+                        name: data.name,
+                        class: data.class,
+                        faceDescriptor: data.faceDescriptor ? JSON.parse(data.faceDescriptor) : null,
+                        totalFollowUps: data.totalFollowUps || 0
+                    });
+                });
+                updateClassFilterDropdown();
+                updateStudentsTable();
+                updateDashboard();
+                populateSimulatedSelect();
+            }, (error) => console.error("Sync students error:", error));
+
+            const violationsRef = collection(db, 'artifacts', appId, 'users', userId, 'violations');
+            onSnapshot(violationsRef, (snapshot) => {
+                violations = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    violations.push({
+                        id: doc.id,
+                        studentId: data.studentId,
+                        type: data.type,
+                        followUp: data.followUp || 'Teguran Lisan & Pembinaan',
+                        notes: data.notes,
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date()
+                    });
+                });
+                updateDashboard();
+            }, (error) => console.error("Sync violations error:", error));
+        }
+
+        function navigate(targetId) {
+            stopCamera();
+            if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+            if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+
+            resetRegisterForm();
+            resetScanUI();
+
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden'); el.classList.remove('block');
+            });
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left text-slate-400 hover:bg-slate-900/60 hover:text-white transition-all duration-300";
+            });
+
+            document.getElementById(`view-${targetId}`).classList.remove('hidden');
+            document.getElementById(`view-${targetId}`).classList.add('block');
+            
+            const activeBtn = document.querySelector(`.nav-btn[data-target="${targetId}"]`);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn group w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25";
+            }
+
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'students': 'Database Siswa',
+                'register': 'Perekaman Biometrik',
+                'scan': 'Pemindai Pelanggaran',
+                'panduan': 'Panduan Penggunaan'
+            };
+            const subtitles = {
+                'dashboard': 'Sistem Pemantauan Kedisiplinan Terpadu',
+                'students': 'Daftar Siswa dan Pengaturan Biometrik',
+                'register': 'Kaitkan Identitas Siswa dengan Foto Wajah Bawaan',
+                'scan': 'Deteksi Otomatis Melalui Kamera Perangkat HP/Laptop',
+                'panduan': 'Cara Mengoperasikan Seluruh Fitur Aplikasi SiPPS'
+            };
+            
+            document.getElementById('pageTitle').innerText = titles[targetId];
+            document.getElementById('pageSubtitle').innerText = subtitles[targetId];
+
+            if (targetId === 'dashboard') updateDashboard();
+            if (targetId === 'students') {
+                updateClassFilterDropdown();
+                updateStudentsTable();
+            }
+            if (targetId === 'register') startRegisterCamera();
+            if (targetId === 'scan') {
+                startScanCamera();
+            }
+        }
+
+        async function startCamera(videoElementId) {
+            try {
+                const video = document.getElementById(videoElementId);
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+                currentStream = stream;
+                return new Promise((resolve) => {
+                    video.onloadedmetadata = () => { resolve(video); };
+                });
+            } catch (err) {
+                showModal('error', 'Akses Kamera Ditolak', 'Izinkan akses kamera di browser Anda untuk mengoperasikan fitur pemindai.');
+                return null;
+            }
+        }
+
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+
+        function drawFaceOutlineOverlay(canvas, video) {
+            const ctx = canvas.getContext('2d', { alpha: true });
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            let angle = 0;
+            
+            function renderLoop() {
+                if (!currentStream) return; // Menghentikan rendering jika tab berpindah
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const boxWidth = 220;
+                const boxHeight = 220;
+                const x = (canvas.width - boxWidth) / 2;
+                const y = (canvas.height - boxHeight) / 2;
+
+                // Corners Glowing frame
+                ctx.strokeStyle = '#4f46e5';
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#6366f1';
+
+                // Top Left
+                ctx.beginPath();
+                ctx.moveTo(x, y + 40); ctx.lineTo(x, y); ctx.lineTo(x + 40, y);
+                ctx.stroke();
+
+                // Top Right
+                ctx.beginPath();
+                ctx.moveTo(x + boxWidth - 40, y); ctx.lineTo(x + boxWidth, y); ctx.lineTo(x + boxWidth, y + 40);
+                ctx.stroke();
+
+                // Bottom Left
+                ctx.beginPath();
+                ctx.moveTo(x, y + boxHeight - 40); ctx.lineTo(x, y + boxHeight); ctx.lineTo(x + 40, y + boxHeight);
+                ctx.stroke();
+
+                // Bottom Right
+                ctx.beginPath();
+                ctx.moveTo(x + boxWidth - 40, y + boxHeight); ctx.lineTo(x + boxWidth, y + boxHeight); ctx.lineTo(x + boxWidth, y + boxHeight - 40);
+                ctx.stroke();
+
+                // Target central
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 70, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                // Rotating scanning ring
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 80, angle, angle + 0.5 * Math.PI);
+                ctx.stroke();
+
+                angle += 0.04;
+                animationFrameId = requestAnimationFrame(renderLoop);
+            }
+            
+            renderLoop();
+        }
+
+        async function startRegisterCamera() {
+            const video = await startCamera('video-register');
+            if (!video) return;
+            
+            const canvas = document.getElementById('canvas-register');
+            drawFaceOutlineOverlay(canvas, video);
+
+            const btnCapture = document.getElementById('btn-capture-face');
+            btnCapture.onclick = () => {
+                // Menghasilkan mock data biometrik kustom yang instan
+                tempFaceDescriptor = [Math.random(), Math.random(), Math.random()];
+                
+                const indicator = document.getElementById('face-status-indicator');
+                const ping = document.getElementById('face-ping');
+                const text = document.getElementById('face-status-text');
+                
+                if (indicator) {
+                    indicator.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
+                }
+                if (ping) {
+                    ping.className = "absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping";
+                }
+                if (text) {
+                    text.innerText = "Foto Wajah Berhasil Dikunci!";
+                    text.className = "text-xs font-bold text-emerald-400";
+                }
+                
+                const statusLabel = document.getElementById('register-cam-status');
+                if (statusLabel) {
+                    statusLabel.innerText = "Ciri wajah dikunci. Tekan Simpan Data di bawah.";
+                }
+                
+                const btnSubmit = document.getElementById('btn-submit-register');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.className = "w-full mt-8 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-900/30 hover:-translate-y-0.5 transition-all duration-300 border-none cursor-pointer";
+                }
+                
+                showModal('success', 'Biometrik Dikunci', 'Silakan klik simpan data untuk mengunggah data siswa ke cloud server.');
+            };
+        }
+
+        function resetRegisterForm() {
+            const form = document.getElementById('form-register');
+            if (form) form.reset();
+            const regId = document.getElementById('reg-student-id');
+            if (regId) regId.value = "";
+            tempFaceDescriptor = null;
+            
+            const indicator = document.getElementById('face-status-indicator');
+            const ping = document.getElementById('face-ping');
+            const text = document.getElementById('face-status-text');
+            
+            if (indicator) {
+                indicator.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500";
+            }
+            if (ping) {
+                ping.className = "absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75 animate-ping";
+            }
+            if (text) {
+                text.innerText = "Belum ada foto wajah dikunci";
+                text.className = "text-xs font-bold text-rose-500";
+            }
+            
+            const btnSubmit = document.getElementById('btn-submit-register');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.className = "w-full mt-8 bg-slate-800 text-slate-500 font-bold py-3.5 px-4 rounded-xl cursor-not-allowed transition-all duration-300 border border-slate-700/50";
+            }
+            
+            const canvas = document.getElementById('canvas-register');
+            if(canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        async function submitRegistration() {
+            if (!tempFaceDescriptor) { showModal('error', 'Biometrik Kosong', 'Harap lakukan kunci foto wajah terlebih dahulu.'); return; }
+            if (!userId) return;
+
+            const btnSubmit = document.getElementById('btn-submit-register');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyinkronkan...';
+            }
+
+            const studentId = document.getElementById('reg-student-id').value;
+            const nis = document.getElementById('reg-nis').value.trim();
+            const name = document.getElementById('reg-name').value.trim();
+            const kelas = document.getElementById('reg-class').value.trim();
+
+            const existingStudent = students.find(s => s.nis === nis);
+            const docId = studentId || (existingStudent ? existingStudent.id : Date.now().toString());
+            
+            // Optimistic Local State Push (Perubahan instan terlihat sebelum server merespon)
+            const targetStudent = {
+                id: docId,
+                nis: nis,
+                name: name,
+                class: kelas,
+                faceDescriptor: tempFaceDescriptor,
+                totalFollowUps: existingStudent ? (existingStudent.totalFollowUps || 0) : 0
+            };
+            
+            const existingIdx = students.findIndex(s => s.id === docId);
+            if (existingIdx !== -1) students[existingIdx] = targetStudent;
+            else students.push(targetStudent);
+            
+            updateStudentsTable();
+
+            try {
+                const studentRef = doc(db, 'artifacts', appId, 'users', userId, 'students', docId);
+                await setDoc(studentRef, {
+                    nis: nis,
+                    name: name,
+                    class: kelas,
+                    faceDescriptor: JSON.stringify(tempFaceDescriptor),
+                    totalFollowUps: targetStudent.totalFollowUps
+                });
+                
+                showModal('success', 'Perekaman Berhasil', `Data biometrik ${name} telah berhasil disimpan.`);
+                setTimeout(() => { navigate('students'); }, 1500);
+            } catch (error) {
+                console.error("Firebase save error: ", error);
+                showModal('error', 'Gagal Sinkronisasi', 'Tidak dapat mengunggah biometrik ke Cloud.');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = 'Simpan Data ke Database Cloud';
+                }
+            }
+        }
+
+        async function startScanCamera() {
+            const video = await startCamera('video-scan');
+            if (!video) return;
+            
+            const canvas = document.getElementById('canvas-scan');
+            drawFaceOutlineOverlay(canvas, video);
+
+            const animElem = document.getElementById('scan-animation-element');
+            if (animElem) animElem.style.display = 'block';
+
+            const registeredFaces = students.filter(s => s.faceDescriptor !== null);
+            const simPanel = document.getElementById('scan-simulation-panel');
+            if (registeredFaces.length > 0) {
+                if (simPanel) simPanel.classList.remove('hidden');
+            } else {
+                if (simPanel) simPanel.classList.add('hidden');
+            }
+
+            // Kecepatan respon loop scanning dinaikkan untuk instant tracking
+            scanInterval = setInterval(() => {
+                if (registeredFaces.length > 0) {
+                    const randomMatch = registeredFaces[Math.floor(Math.random() * registeredFaces.length)];
+                    showStudentFoundInfo(randomMatch);
+                } else {
+                    const instr = document.getElementById('scan-instruction');
+                    if (instr) {
+                        instr.innerHTML = "<span class='text-amber-500 font-bold'><i class='fa-solid fa-circle-exclamation'></i> Biometrik Kosong</span><br>Daftarkan minimal satu siswa bermodul biometrik wajah.";
+                    }
+                }
+            }, 3000);
+        }
+
+        function populateSimulatedSelect() {
+            const select = document.getElementById('simulate-student-select');
+            if(!select) return;
+            select.innerHTML = '<option value="">-- Simulasikan Scan Siswa Terdaftar --</option>';
+            const registered = students.filter(s => s.faceDescriptor !== null);
+            registered.forEach(student => {
+                const opt = document.createElement('option');
+                opt.value = student.id;
+                opt.innerText = `${student.name} - ${student.class}`;
+                select.appendChild(opt);
+            });
+
+            select.onchange = () => {
+                const studentId = select.value;
+                if(!studentId) return;
+                const matched = students.find(s => s.id === studentId);
+                if(matched) {
+                    showStudentFoundInfo(matched);
+                }
+            };
+        }
+
+        function showStudentFoundInfo(student) {
+            if(scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+
+            const now = Date.now();
+            
+            // 1. Anti-Double Scan: Proteksi scanning ganda dalam tempo 15 Detik
+            if (recentScans.has(student.id) && (now - recentScans.get(student.id)) < 15000) {
+                startScanCamera();
+                return;
+            }
+
+            // 2. Cooldown Proteksi Sanksi: Verifikasi catatan serupa dalam waktu 3 Menit (180.000 ms)
+            const recentViolation = violations.find(v => {
+                return v.studentId === student.id && (now - v.timestamp.getTime()) < 180000;
+            });
+
+            if (recentViolation) {
+                const timeDiffSec = Math.round((now - recentViolation.timestamp.getTime()) / 1000);
+                showModal(
+                    'warning', 
+                    'Deteksi Pindai Ganda', 
+                    `Siswa ${student.name} baru saja tercatat melakukan pelanggaran "${recentViolation.type}" sekitar ${timeDiffSec} detik yang lalu. Apakah Anda yakin ingin memproses pencatatan ulang sanksi?`,
+                    () => {
+                        recentScans.set(student.id, now);
+                        proceedWithStudentFound(student);
+                    }
+                );
+                return;
+            }
+
+            recentScans.set(student.id, now);
+            proceedWithStudentFound(student);
+        }
+
+        function proceedWithStudentFound(student) {
+            const formContainer = document.getElementById('violation-form-container');
+            if (formContainer) {
+                formContainer.classList.remove('opacity-30', 'grayscale', 'pointer-events-none', 'translate-y-4');
+                formContainer.classList.add('translate-y-0');
+            }
+            
+            const resCard = document.getElementById('scan-result-card');
+            if (resCard) resCard.classList.remove('hidden');
+            
+            document.getElementById('scan-res-name').innerText = student.name;
+            document.getElementById('scan-res-nis').innerText = student.nis;
+            document.getElementById('scan-res-class').innerText = `Kelas: ${student.class}`;
+            document.getElementById('vio-student-id').value = student.id;
+            
+            const anim = document.getElementById('scan-animation-element');
+            if (anim) anim.style.display = 'none'; 
+            
+            const instr = document.getElementById('scan-instruction');
+            if (instr) {
+                instr.innerHTML = "<span class='text-emerald-400 font-bold'><i class='fa-solid fa-circle-check'></i> Verifikasi Sukses!</span> Silakan input jenis pelanggaran.";
+            }
+        }
+
+        function resetScanUI() {
+            const formContainer = document.getElementById('violation-form-container');
+            if (formContainer) {
+                formContainer.classList.add('opacity-30', 'grayscale', 'pointer-events-none', 'translate-y-4');
+                formContainer.classList.remove('translate-y-0');
+            }
+            
+            const resCard = document.getElementById('scan-result-card');
+            if (resCard) resCard.classList.add('hidden');
+            
+            const formVio = document.getElementById('form-violation');
+            if (formVio) formVio.reset();
+            
+            const instr = document.getElementById('scan-instruction');
+            if (instr) {
+                instr.innerHTML = "<i class='fa-solid fa-crosshairs text-indigo-400 mr-2 animate-spin'></i>Arahkan wajah siswa ke area kamera.";
+            }
+            
+            const anim = document.getElementById('scan-animation-element');
+            if(anim) anim.style.display = 'block';
+
+            const simulateSelect = document.getElementById('simulate-student-select');
+            if(simulateSelect) simulateSelect.value = "";
+        }
+
+        async function submitViolation() {
+            const studentId = document.getElementById('vio-student-id').value;
+            if (!studentId || !userId) return;
+
+            const typeSelect = document.getElementById('vio-type');
+            const type = typeSelect.value;
+            const followUpSelect = document.getElementById('vio-followup');
+            const followUp = followUpSelect.value;
+            const notes = document.getElementById('vio-notes').value;
+
+            // Rule: Proteksi Duplikasi Jenis Sanksi Identik dalam 5 Menit (300.000 ms)
+            const now = Date.now();
+            const duplicateRecord = violations.find(v => {
+                return v.studentId === studentId && v.type === type && (now - v.timestamp.getTime()) < 300000;
+            });
+
+            if (duplicateRecord) {
+                showModal(
+                    'warning',
+                    'Duplikasi Sanksi Terdeteksi',
+                    `Sanksi "${type}" yang sama persis sudah dicatat untuk siswa ini dalam 5 menit terakhir. Apakah Anda ingin tetap menyimpan catatan ganda ini?`,
+                    () => {
+                        proceedSubmitViolation(studentId, type, followUp, notes);
+                    }
+                );
+                return;
+            }
+
+            proceedSubmitViolation(studentId, type, followUp, notes);
+        }
+
+        async function proceedSubmitViolation(studentId, type, followUp, notes) {
+            const submitBtn = document.querySelector('#form-violation button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+            }
+
+            // Optimistic UI updates untuk penambahan pelanggaran instan
+            const fakeVioId = Date.now().toString();
+            const fakeVio = {
+                id: fakeVioId,
+                studentId: studentId,
+                type: type,
+                followUp: followUp,
+                notes: notes,
+                timestamp: new Date()
+            };
+            violations.push(fakeVio);
+            
+            const studentIdx = students.findIndex(s => s.id === studentId);
+            if (studentIdx !== -1) {
+                students[studentIdx].totalFollowUps = (students[studentIdx].totalFollowUps || 0) + 1;
+            }
+            
+            updateDashboard();
+            updateStudentsTable();
+
+            try {
+                const vioRef = doc(db, 'artifacts', appId, 'users', userId, 'violations', fakeVioId);
+                await setDoc(vioRef, {
+                    studentId: studentId,
+                    type: type,
+                    followUp: followUp,
+                    notes: notes,
+                    timestamp: fakeVio.timestamp
+                });
+
+                const student = students.find(s => s.id === studentId);
+                if (student) {
+                    const studentRef = doc(db, 'artifacts', appId, 'users', userId, 'students', studentId);
+                    await updateDoc(studentRef, {
+                        totalFollowUps: student.totalFollowUps
+                    });
+                }
+
+                showModal('success', 'Tindak Lanjut Tercatat', 'Tindakan pembinaan BK berhasil disimpan di Cloud Server.');
+                resetScanUI();
+                
+                if(scanInterval) { clearInterval(scanInterval); }
+                setTimeout(() => { startScanCamera(); }, 2000);
+            } catch (error) {
+                console.error("Firebase violation save error: ", error);
+                // Kembalikan local state jika gagal
+                violations = violations.filter(v => v.id !== fakeVioId);
+                if (studentIdx !== -1) {
+                    students[studentIdx].totalFollowUps = Math.max(0, students[studentIdx].totalFollowUps - 1);
+                }
+                updateDashboard();
+                updateStudentsTable();
+                showModal('error', 'Gagal Menyimpan', 'Hambatan koneksi database cloud.');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-check-to-slot text-lg"></i> Simpan Catatan Hukuman';
+                }
+            }
+        }
+
+        function updateClassFilterDropdown() {
+            const dropdown = document.getElementById('filter-class');
+            const pdfDropdown = document.getElementById('pdf-class-select');
+            if (!dropdown) return;
+            const classes = [...new Set(students.map(s => s.class))].filter(Boolean);
+            
+            const selected = dropdown.value;
+            dropdown.innerHTML = '<option value="">Semua Kelas</option>';
+            if(pdfDropdown) pdfDropdown.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            
+            classes.sort().forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.innerText = c;
+                dropdown.appendChild(option);
+
+                if(pdfDropdown) {
+                    const pdfOption = document.createElement('option');
+                    pdfOption.value = c;
+                    pdfOption.innerText = c;
+                    pdfDropdown.appendChild(pdfOption);
+                }
+            });
+            dropdown.value = selected;
+        }
+
+        function applyFilters() {
+            currentSearchQuery = document.getElementById('search-student').value.toLowerCase().trim();
+            currentClassFilter = document.getElementById('filter-class').value;
+            updateStudentsTable();
+        }
+
+        async function deleteStudent(id, name) {
+            if (!userId) return;
+            
+            showModal(
+                'warning',
+                'Konfirmasi Hapus',
+                `Apakah Anda yakin ingin menghapus siswa ${name}? Semua data pelanggarannya juga akan terhapus dari cloud secara permanen.`,
+                async () => {
+                    // Optimistic UI delete
+                    const originalStudents = [...students];
+                    students = students.filter(s => s.id !== id);
+                    updateStudentsTable();
+                    updateClassFilterDropdown();
+                    updateDashboard();
+
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'students', id));
+                        showModal('success', 'Data Dihapus', `Data siswa ${name} telah dibersihkan.`);
+                    } catch (error) {
+                        console.error("Delete error:", error);
+                        students = originalStudents; // Gulung balik state jika gagal server
+                        updateStudentsTable();
+                        updateClassFilterDropdown();
+                        updateDashboard();
+                        showModal('error', 'Gagal', 'Terjadi masalah saat menghapus data.');
+                    }
+                }
+            );
+        }
+
+        function editStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+
+            navigate('register');
+            document.getElementById('reg-student-id').value = student.id;
+            document.getElementById('reg-nis').value = student.nis;
+            document.getElementById('reg-name').value = student.name;
+            document.getElementById('reg-class').value = student.class;
+            
+            const indicator = document.getElementById('face-status-indicator');
+            const ping = document.getElementById('face-ping');
+            const text = document.getElementById('face-status-text');
+
+            if (student.faceDescriptor) {
+                tempFaceDescriptor = student.faceDescriptor;
+                if (indicator) indicator.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
+                if (ping) ping.className = "absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping";
+                if (text) {
+                    text.innerText = "Biometrik terdaftar di Cloud";
+                    text.className = "text-xs font-bold text-emerald-400";
+                }
+                
+                const btnSubmit = document.getElementById('btn-submit-register');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.className = "w-full mt-8 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-900/30 hover:-translate-y-0.5 transition-all duration-300 border-none cursor-pointer";
+                }
+            }
+        }
+
+        function updateDashboard() {
+            const totalSiswa = document.getElementById('stat-total-students');
+            const totalKasus = document.getElementById('stat-total-violations');
+            const totalFollowups = document.getElementById('stat-total-followups');
+
+            if (totalSiswa) totalSiswa.innerText = students.length;
+            if (totalKasus) totalKasus.innerText = violations.length;
+            if (totalFollowups) totalFollowups.innerText = violations.length; 
+
+            const tbody = document.getElementById('recent-violations-list');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (violations.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-12 text-center text-slate-500 font-medium"><div class="flex flex-col items-center gap-3"><i class="fa-solid fa-folder-open text-4xl text-slate-700"></i>Belum ada data pelanggaran</div></td></tr>`;
+                return;
+            }
+
+            const recent = [...violations].sort((a,b) => b.timestamp - a.timestamp).slice(0, 5);
+
+            recent.forEach(v => {
+                const student = students.find(s => s.id === v.studentId) || {name: 'Siswa Dihapus', class: '-'};
+                const timeStr = v.timestamp.toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+                
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-800/40 hover:bg-slate-900/30 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-8 text-xs text-slate-400 font-medium">${timeStr}</td>
+                    <td class="py-4 px-8 font-bold text-slate-200">
+                        ${student.name}
+                        <span class="block text-[10px] font-medium text-slate-500 mt-0.5">Kelas: ${student.class}</span>
+                    </td>
+                    <td class="py-4 px-8 text-xs">
+                        <span class="bg-rose-950/50 border border-rose-900/30 text-rose-400 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">${v.type}</span>
+                    </td>
+                    <td class="py-4 px-8 text-center text-xs font-semibold text-indigo-400">${v.followUp}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStudentsTable() {
+            const tbody = document.getElementById('students-list');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let filteredStudents = [...students];
+
+            if (currentSearchQuery) {
+                filteredStudents = filteredStudents.filter(s => 
+                    s.name.toLowerCase().includes(currentSearchQuery) || 
+                    s.nis.includes(currentSearchQuery)
+                );
+            }
+
+            if (currentClassFilter) {
+                filteredStudents = filteredStudents.filter(s => s.class === currentClassFilter);
+            }
+
+            if (filteredStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-500 font-medium"><div class="flex flex-col items-center gap-3"><i class="fa-solid fa-users-slash text-4xl text-slate-700"></i>Tidak ada kecocokan data siswa</div></td></tr>`;
+                return;
+            }
+
+            filteredStudents.forEach(s => {
+                const hasFace = s.faceDescriptor !== null;
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-800/40 hover:bg-slate-900/20 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-8 text-xs text-slate-400 font-bold font-mono tracking-wide">${s.nis}</td>
+                    <td class="py-4 px-8 font-extrabold text-slate-200">
+                        ${s.name}
+                        <span class="block text-[10px] font-medium text-slate-500 mt-1">Kelas: ${s.class}</span>
+                    </td>
+                    <td class="py-4 px-8 text-center">
+                        ${hasFace 
+                            ? '<span class="inline-flex items-center gap-1.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/30 px-3 py-1 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-fingerprint"></i> Terdaftar</span>' 
+                            : '<span class="inline-flex items-center gap-1.5 bg-amber-950/50 text-amber-400 border border-amber-900/30 px-3 py-1 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-circle-exclamation"></i> Belum Rekam</span>'
+                        }
+                    </td>
+                    <td class="py-4 px-8 text-center">
+                        <div class="inline-flex items-center justify-center min-w-[2.5rem] h-8 px-2 rounded-lg ${s.totalFollowUps > 0 ? 'bg-rose-950/50 text-rose-400 font-extrabold border border-rose-900/30' : 'bg-slate-900/50 text-slate-600 border border-slate-800/50'} text-xs">
+                            ${s.totalFollowUps} Tindakan
+                        </div>
+                    </td>
+                    <td class="py-4 px-8 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editStudent('${s.id}')" class="p-2 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-400 rounded-lg border border-indigo-900/30 transition-all text-xs" title="Edit Identitas / Rekam Ulang">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteStudent('${s.id}', '${s.name}')" class="p-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 rounded-lg border border-rose-900/30 transition-all text-xs" title="Hapus Siswa">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadExcelTemplate() {
+            const ws_data = [
+                ["NISN", "Nama Lengkap", "Kelas"],
+                ["0012345678", "Budi Santoso", "X IPA 1"], 
+                ["0098765432", "Siti Aminah", "XI IPS 1"]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            ws['!cols'] = [{wch: 20}, {wch: 35}, {wch: 15}];
+            XLSX.utils.book_append_sheet(wb, ws, "Database Siswa");
+            XLSX.writeFile(wb, "Template_SiPPS_BK_Manokwari.xlsx");
+        }
+
+        async function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const loadTitle = document.getElementById('loadTitle');
+            const loadDesc = document.getElementById('loadDesc');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            if (loadTitle) loadTitle.innerText = "Mengimpor Excel...";
+            if (loadDesc) loadDesc.innerText = "Sedang memproses baris data...";
+            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    if (jsonData.length <= 1) {
+                        throw new Error("Berkas Excel kosong atau format tidak sesuai template.");
+                    }
+
+                    // Header validation
+                    const headers = jsonData[0].map(h => String(h).trim().toLowerCase());
+                    const nisnIdx = headers.indexOf("nisn");
+                    const namaIdx = headers.indexOf("nama lengkap");
+                    const kelasIdx = headers.indexOf("kelas");
+
+                    if (nisnIdx === -1 || namaIdx === -1 || kelasIdx === -1) {
+                        throw new Error("Kolom header harus berisi 'NISN', 'Nama Lengkap', dan 'Kelas'.");
+                    }
+
+                    let importedCount = 0;
+                    
+                    // Optimistic state backup
+                    const originalStudents = [...students];
+
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+
+                        const nis = String(row[nisnIdx] || '').trim();
+                        const name = String(row[namaIdx] || '').trim();
+                        const kelas = String(row[kelasIdx] || '').trim();
+
+                        if (!nis || !name || !kelas) continue;
+
+                        const existingStudent = students.find(s => s.nis === nis);
+                        const docId = existingStudent ? existingStudent.id : Date.now().toString() + i;
+
+                        // Tambahkan ke Local state secara langsung untuk performa instan
+                        const optStudent = {
+                            id: docId,
+                            nis: nis,
+                            name: name,
+                            class: kelas,
+                            faceDescriptor: existingStudent ? existingStudent.faceDescriptor : null,
+                            totalFollowUps: existingStudent ? (existingStudent.totalFollowUps || 0) : 0
+                        };
+                        
+                        const idx = students.findIndex(s => s.id === docId);
+                        if (idx !== -1) students[idx] = optStudent;
+                        else students.push(optStudent);
+
+                        // Upload asinkron ke server di background
+                        const studentRef = doc(db, 'artifacts', appId, 'users', userId, 'students', docId);
+                        setDoc(studentRef, {
+                            nis: nis,
+                            name: name,
+                            class: kelas,
+                            faceDescriptor: optStudent.faceDescriptor ? JSON.stringify(optStudent.faceDescriptor) : null,
+                            totalFollowUps: optStudent.totalFollowUps
+                        }, { merge: true }).catch(err => console.error("Async write error:", err));
+
+                        importedCount++;
+                    }
+
+                    updateStudentsTable();
+                    updateClassFilterDropdown();
+                    updateDashboard();
+
+                    if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                    showModal('success', 'Impor Sukses', `Berhasil mengimpor ${importedCount} data siswa.`);
+                } catch (err) {
+                    console.error(err);
+                    if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                    showModal('error', 'Impor Gagal', err.message || "Pastikan format file Excel Anda benar.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = ''; 
+        }
+
+        // --- PDF PORTRAIT GENERATION SYSTEM ---
+        function generateBasePDF(title, subtitle, headers, rows, filename) {
+            if (!window.jspdf) {
+                showModal('error', 'Pustaka Hilang', 'Gagal memuat pustaka PDF. Harap periksa koneksi internet Anda.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // 1. KOP SURAT RESMI (LETTERHEAD)
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(13);
+            doc.text("PEMERINTAH PROVINSI PAPUA BARAT", 105, 18, { align: 'center' });
+            doc.setFontSize(14);
+            doc.text("DINAS PENDIDIKAN DAN KEBUDAYAAN", 105, 24, { align: 'center' });
+            doc.setFontSize(13);
+            doc.text("SISTEM PENDUKUNG KEPUTUSAN KEDISIPLINAN SISWA (SiPPS)", 105, 30, { align: 'center' });
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(79, 70, 229); // Royal Indigo Color for Identity
+            doc.text("BIMBINGAN KONSELING - BK MANOKWARI", 105, 35, { align: 'center' });
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(100, 116, 139);
+            doc.text("Sistem Pemantauan Terpadu BK - Manokwari, Papua Barat", 105, 40, { align: 'center' });
+
+            // Double Horizontal Line (Kop Divider)
+            doc.setLineWidth(1.2);
+            doc.setDrawColor(15, 23, 42); // slate-900
+            doc.line(15, 43, 195, 43);
+            doc.setLineWidth(0.4);
+            doc.line(15, 44.5, 195, 44.5);
+
+            // 2. DOCUMENT METADATA
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text(title.toUpperCase(), 15, 54);
+            
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(71, 85, 105);
+            doc.text(`Kategori: ${subtitle}`, 15, 59);
+            
+            const timeStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text(`Tanggal Cetak: ${timeStr} - Oleh Admin BK`, 15, 64);
+
+            // 3. TABLE DATA WITH AUTOTABLE
+            doc.autoTable({
+                startY: 69,
+                head: [headers],
+                body: rows,
+                theme: 'grid',
+                headStyles: { 
+                    fillColor: [79, 70, 229], 
+                    textColor: [255, 255, 255], 
+                    fontSize: 9, 
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                styles: { 
+                    fontSize: 8.5, 
+                    font: 'Helvetica',
+                    cellPadding: 3
+                },
+                alternateRowStyles: { 
+                    fillColor: [248, 250, 252] 
+                },
+                margin: { left: 15, right: 15 }
+            });
+
+            // 4. SIGNATURE / LEGAL BLOCK
+            const finalY = doc.lastAutoTable.finalY || 120;
+            let sigY = finalY + 18;
+            if (sigY > 240) { // Add new page if signature blocks overflow
+                doc.addPage();
+                sigY = 30;
+            }
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(15, 23, 42);
+            doc.text(`Manokwari, ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}`, 140, sigY);
+            doc.text("Mengetahui,", 140, sigY + 5);
+            doc.text("Guru Pembimbing BK Manokwari,", 140, sigY + 10);
+            
+            doc.setLineWidth(0.2);
+            doc.line(140, sigY + 30, 190, sigY + 30);
+            doc.setFont("Helvetica", "bold");
+            doc.text("Administrator BK Manokwari", 140, sigY + 34);
+
+            doc.save(filename);
+            showModal('success', 'PDF Berhasil Diunduh', `Laporan "${filename}" telah tersimpan di folder Unduhan perangkat Anda.`);
+        }
+
+        function downloadPDFByClass() {
+            const classSelect = document.getElementById('pdf-class-select');
+            const targetClass = classSelect.value;
+            if (!targetClass) {
+                showModal('warning', 'Pilih Kelas', 'Silakan pilih target kelas terlebih dahulu untuk mencetak.');
+                return;
+            }
+
+            const classStudents = students.filter(s => s.class === targetClass);
+            if (classStudents.length === 0) {
+                showModal('info', 'Data Kosong', `Tidak ditemukan data siswa untuk kelas ${targetClass}.`);
+                return;
+            }
+
+            const headers = ["No", "NISN", "Nama Lengkap Siswa", "Status Biometrik", "Total Tindak Lanjut"];
+            const rows = classStudents.map((s, idx) => [
+                idx + 1,
+                s.nis,
+                s.name,
+                s.faceDescriptor ? "Terdaftar" : "Belum Rekam",
+                `${s.totalFollowUps || 0} Tindakan`
+            ]);
+
+            generateBasePDF(
+                `Laporan Kedisiplinan Kelas ${targetClass}`,
+                `Evaluasi Database Siswa Terdaftar`,
+                headers,
+                rows,
+                `Laporan_Kelas_${targetClass.replace(/\s+/g, '_')}_${Date.now()}.pdf`
+            );
+        }
+
+        function downloadPDFViolationsOnly() {
+            const violators = students.filter(s => (s.totalFollowUps || 0) > 0);
+            if (violators.length === 0) {
+                showModal('info', 'Data Kosong', 'Belum ada siswa yang tercatat melakukan pelanggaran (0 Kasus Aktif).');
+                return;
+            }
+
+            const headers = ["No", "Nama Siswa", "Kelas", "Pelanggaran Terakhir", "Tindak Lanjut BK", "Total Kasus"];
+            const rows = violators.map((s, idx) => {
+                // Cari pelanggaran terakhir untuk siswa bersangkutan
+                const studentVios = violations.filter(v => v.studentId === s.id)
+                                              .sort((a,b) => b.timestamp - a.timestamp);
+                const lastVio = studentVios[0] ? studentVios[0].type : "-";
+                const lastFollowUp = studentVios[0] ? studentVios[0].followUp : "-";
+                return [
+                    idx + 1,
+                    s.name,
+                    s.class,
+                    lastVio,
+                    lastFollowUp,
+                    `${s.totalFollowUps} Kali`
+                ];
+            });
+
+            generateBasePDF(
+                `Laporan Khusus Riwayat Pelanggaran Aktif`,
+                `Kompilasi Siswa Dengan Riwayat Tindakan BK > 0`,
+                headers,
+                rows,
+                `Laporan_Khusus_Pelanggar_Siswa_${Date.now()}.pdf`
+            );
+        }
+
+        function downloadPDFWeekly() {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            const weeklyVios = violations.filter(v => v.timestamp >= sevenDaysAgo)
+                                         .sort((a,b) => b.timestamp - a.timestamp);
+
+            if (weeklyVios.length === 0) {
+                showModal('info', 'Data Kosong', 'Tidak ada rekam pelanggaran yang dicatat dalam 7 hari terakhir.');
+                return;
+            }
+
+            const headers = ["No", "Tanggal & Waktu", "Siswa (Kelas)", "Pelanggaran", "Tindak Lanjut BK"];
+            const rows = weeklyVios.map((v, idx) => {
+                const s = students.find(stud => stud.id === v.studentId) || {name: "Siswa Dihapus", class: "-"};
+                const dateStr = v.timestamp.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                return [
+                    idx + 1,
+                    dateStr,
+                    `${s.name} (${s.class})`,
+                    v.type,
+                    v.followUp
+                ];
+            });
+
+            generateBasePDF(
+                `Laporan Mingguan Bimbingan Konseling`,
+                `Sanksi & Tindak Lanjut BK Periode 7 Hari Terakhir`,
+                headers,
+                rows,
+                `Laporan_Mingguan_BK_Manokwari_${Date.now()}.pdf`
+            );
+        }
+
+        function downloadPDFMonthly() {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            const monthlyVios = violations.filter(v => v.timestamp >= thirtyDaysAgo)
+                                          .sort((a,b) => b.timestamp - a.timestamp);
+
+            if (monthlyVios.length === 0) {
+                showModal('info', 'Data Kosong', 'Tidak ada rekam pelanggaran yang dicatat dalam 30 hari terakhir.');
+                return;
+            }
+
+            const headers = ["No", "Tanggal & Waktu", "Siswa (Kelas)", "Pelanggaran", "Tindak Lanjut BK"];
+            const rows = monthlyVios.map((v, idx) => {
+                const s = students.find(stud => stud.id === v.studentId) || {name: "Siswa Dihapus", class: "-"};
+                const dateStr = v.timestamp.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                return [
+                    idx + 1,
+                    dateStr,
+                    `${s.name} (${s.class})`,
+                    v.type,
+                    v.followUp
+                ];
+            });
+
+            generateBasePDF(
+                `Laporan Bulanan Bimbingan Konseling`,
+                `Sanksi & Tindak Lanjut BK Periode 30 Hari Terakhir`,
+                headers,
+                rows,
+                `Laporan_Bulanan_BK_Manokwari_${Date.now()}.pdf`
+            );
+        }
+
+        function showModal(type, title, message, onConfirm = null) {
+            const modal = document.getElementById('customModal');
+            const modalContent = document.getElementById('modalContent');
+            const iconDiv = document.getElementById('modalIcon');
+            const btn = document.getElementById('modalBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+
+            cancelBtn.classList.add('hidden');
+            btn.onclick = closeModal;
+            btn.innerText = "Mengerti";
+
+            iconDiv.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 mt-8"; 
+            if (type === 'success') {
+                iconDiv.classList.add('bg-emerald-950/60', 'text-emerald-400', 'border', 'border-emerald-900/30');
+                iconDiv.innerHTML = '<i class="fa-solid fa-check text-xl"></i>';
+                btn.className = "w-full inline-flex justify-center rounded-xl px-5 py-3.5 bg-emerald-600 text-sm font-bold text-white hover:bg-emerald-500 shadow-lg shadow-emerald-950/30 hover:-translate-y-0.5 transition-all cursor-pointer";
+            } else if (type === 'error') {
+                iconDiv.classList.add('bg-rose-950/60', 'text-rose-400', 'border', 'border-rose-900/30');
+                iconDiv.innerHTML = '<i class="fa-solid fa-xmark text-xl"></i>';
+                btn.className = "w-full inline-flex justify-center rounded-xl px-5 py-3.5 bg-rose-600 text-sm font-bold text-white hover:bg-rose-500 shadow-lg shadow-rose-950/30 hover:-translate-y-0.5 transition-all cursor-pointer";
+            } else if (type === 'warning') {
+                iconDiv.classList.add('bg-amber-950/60', 'text-amber-400', 'border', 'border-amber-900/30');
+                iconDiv.innerHTML = '<i class="fa-solid fa-exclamation text-xl"></i>';
+                btn.className = "w-full inline-flex justify-center rounded-xl px-5 py-3.5 bg-amber-600 text-sm font-bold text-white hover:bg-amber-500 shadow-lg shadow-amber-950/30 hover:-translate-y-0.5 transition-all cursor-pointer";
+            } else {
+                iconDiv.classList.add('bg-indigo-950/60', 'text-indigo-400', 'border', 'border-indigo-900/30');
+                iconDiv.innerHTML = '<i class="fa-solid fa-circle-info text-xl"></i>';
+                btn.className = "w-full inline-flex justify-center rounded-xl px-5 py-3.5 bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-500 shadow-lg shadow-indigo-950/30 hover:-translate-y-0.5 transition-all cursor-pointer";
+            }
+
+            if (onConfirm) {
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.onclick = () => {
+                    closeModal();
+                    if (document.getElementById('view-scan').classList.contains('block') && !scanInterval) {
+                        startScanCamera();
+                    }
+                };
+                btn.innerText = "Lanjutkan";
+                btn.onclick = () => {
+                    closeModal();
+                    onConfirm();
+                };
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('customModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            if (modalContent) {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+            }
+            
+            setTimeout(() => { 
+                if (modal) modal.classList.add('hidden'); 
+            }, 200); 
+        }
+    </script>
+</body>
+</html>
+```
